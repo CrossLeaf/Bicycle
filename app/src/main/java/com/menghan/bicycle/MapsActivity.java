@@ -2,6 +2,7 @@ package com.menghan.bicycle;
 
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.util.Log;
 
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -17,6 +18,9 @@ public class MapsActivity extends FragmentActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
         setUpMapIfNeeded();
+        UbikeAPI ubikeAPI = new UbikeAPI();
+        String jsonData = ubikeAPI.getAPI();
+        Log.e("url", "get API:"+"/n"+jsonData);
     }
 
     @Override
