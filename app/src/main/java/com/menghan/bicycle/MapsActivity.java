@@ -1,12 +1,21 @@
 package com.menghan.bicycle;
 
+import android.content.Context;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.util.Log;
 
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
 
 public class MapsActivity extends FragmentActivity {
 
@@ -17,6 +26,45 @@ public class MapsActivity extends FragmentActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
         setUpMapIfNeeded();
+        Log.e("value", "執行到29行");
+        //取得 json 字串
+        String json = getRowData(this, R.raw.ubike);
+        Log.e("value", json);
+        //json to pojo
+        Gson gson = new GsonBuilder().create();
+        //將 json 資料注入至 RetCode 物件
+        RetCode code = gson.fromJson(json, RetCode.class);
+
+        for (RetVal val : code.getRetVal()) {       //取得retVal的陣列裡的物件
+            RetVal sum = new RetVal(val.getLat(), val.getLng());   //取出要呈現的值
+            Log.e("value", sum.toString());
+
+        }
+    }
+
+    private String getRowData(Context context, int res_id) {
+        InputStream is = null;
+        InputStreamReader reader = null;
+        StringBuilder sb = new StringBuilder();
+
+        try {
+            is = context.getResources().openRawResource(res_id);
+            reader = new InputStreamReader(is, "UTF-8");
+            char[] buffer = new char[1];
+            while (reader.read(buffer) != -1) {
+                sb.append(new String(buffer));
+            }
+        } catch (Exception e) {
+
+        } finally {
+            try {
+                if (is != null)
+                    is.close();
+            } catch (IOException e) {
+
+            }
+            return sb.toString();
+        }
     }
 
     @Override
@@ -29,11 +77,11 @@ public class MapsActivity extends FragmentActivity {
      * Sets up the map if it is possible to do so (i.e., the Google Play services APK is correctly
      * installed) and the map has not already been instantiated.. This will ensure that we only ever
      * call {@link #setUpMap()} once when {@link #mMap} is not null.
-     * <p/>
+     * <p>
      * If it isn't installed {@link SupportMapFragment} (and
      * {@link com.google.android.gms.maps.MapView MapView}) will show a prompt for the user to
      * install/update the Google Play services APK on their device.
-     * <p/>
+     * <p>
      * A user can return to this FragmentActivity after following the prompt and correctly
      * installing/updating/enabling the Google Play services. Since the FragmentActivity may not
      * have been completely destroyed during this process (it is likely that it would only be
@@ -56,7 +104,7 @@ public class MapsActivity extends FragmentActivity {
     /**
      * This is where we can add markers or lines, add listeners or move the camera. In this case, we
      * just add a marker near Africa.
-     * <p/>
+     * <p>
      * This should only be called once and when we are sure that {@link #mMap} is not null.
      */
     private void setUpMap() {
