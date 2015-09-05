@@ -20,25 +20,45 @@ import java.util.ArrayList;
 public class MapsActivity extends FragmentActivity {
 
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
+    private double lat[];
+    private double lng[];
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
         setUpMapIfNeeded();
-        Log.e("value", "執行到29行");
         //取得 json 字串
         String json = getRowData(this, R.raw.ubike);
-        Log.e("value", json);
+//        Log.e("value", json);
         //json to pojo
         Gson gson = new GsonBuilder().create();
         //將 json 資料注入至 RetCode 物件
         RetCode code = gson.fromJson(json, RetCode.class);
+        int i = 0;
+        lat = new double [381];
+        lng = new double[381];
+        try {
+            for (RetVal val : code.getRetVal()) {       //取得retVal的陣列裡的物件
+                Log.e("test", String.valueOf(val.getLat()));
+                Log.e("test", String.valueOf(i));
+                lat[i] = val.getLat();
+                lng[i] = val.getLng();
+                i++;
+//            RetVal sum = new RetVal(val.getLat(), val.getLng());   //取出要呈現的值
+//            Log.e("value", sum.toString());
 
-        for (RetVal val : code.getRetVal()) {       //取得retVal的陣列裡的物件
-            RetVal sum = new RetVal(val.getLat(), val.getLng());   //取出要呈現的值
-            Log.e("value", sum.toString());
+            }
+            drawMarker();
+        }catch (Exception e){
 
+        }
+    }
+
+    private void drawMarker() {
+        Log.e("draw", String.valueOf(lat.length));
+        for (int i=0; i<lat.length; i++){
+            mMap.addMarker(new MarkerOptions().position(new LatLng(lat[i], lng[i])).title("yes"));
         }
     }
 
@@ -109,5 +129,6 @@ public class MapsActivity extends FragmentActivity {
      */
     private void setUpMap() {
         mMap.addMarker(new MarkerOptions().position(new LatLng(0, 0)).title("Marker"));
+
     }
 }

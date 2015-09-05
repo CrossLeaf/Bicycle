@@ -20,7 +20,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/imageButton"
-            android:src="@drawable/list" />
+            android:src="@drawable/favorite" />
 
         <EditText
             android:layout_width="wrap_content"
@@ -46,7 +46,7 @@
         android:layout_alignParentStart="true"
         android:layout_below="@+id/linearLayout" />
 
-    <LinearLayout
+    <GridLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -54,7 +54,9 @@
         android:layout_alignParentStart="true"
         android:background="#42c5f5ff"
         android:weightSum="1"
-        android:id="@+id/linearLayout2">
+        android:id="@+id/gridLayout2"
+        android:columnCount="6"
+        android:rowCount="1">
 
         <ImageButton
             android:layout_width="wrap_content"
@@ -62,8 +64,9 @@
             android:id="@+id/bottomBtn1"
             android:src="@drawable/refresh"
             android:alpha="10"
-            android:layout_weight="0.05"
-            android:layout_gravity="bottom" />
+            android:layout_gravity="bottom"
+            android:layout_weight="1"
+            android:layout_column="0"/>
 
         <ImageButton
             android:layout_width="wrap_content"
@@ -71,8 +74,8 @@
             android:id="@+id/bottomBtn2"
             android:src="@drawable/marker"
             android:alpha="10"
-            android:layout_weight="0.05"
-            android:layout_gravity="bottom" />
+            android:layout_gravity="bottom"
+            android:layout_column="1"/>
 
         <ImageButton
             android:layout_width="wrap_content"
@@ -80,28 +83,28 @@
             android:id="@+id/bottomBtn3"
             android:src="@drawable/weather"
             android:alpha="10"
-            android:layout_weight="0.05"
-            android:layout_gravity="bottom" />
+            android:layout_column="4" />
 
-        <RelativeLayout
-            android:layout_width="219dp"
-            android:layout_height="match_parent">
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="62dp"
+            android:id="@+id/bottomBtn4"
+            android:src="@drawable/list"
+            android:alpha="10"
+            android:layout_column="5" />
 
-        </RelativeLayout>
-
-    </LinearLayout>
+    </GridLayout>
 
     <ImageButton
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
         android:id="@+id/fab"
         android:background="@drawable/ripple"
         android:elevation="4dp"
         android:src="@drawable/location"
-        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="32dp"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true"
-        android:layout_marginBottom="40dp" />
+        android:layout_centerHorizontal="true" />
 
 </RelativeLayout>
 

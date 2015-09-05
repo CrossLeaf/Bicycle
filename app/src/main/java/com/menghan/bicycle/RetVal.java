@@ -50,12 +50,12 @@ public class RetVal {
         return sarea;
     }
 
-    public String getLat() {
-        return lat;
+    public double getLat() {
+        return Double.parseDouble(lat);
     }
 
-    public String getLng() {
-        return lng;
+    public double getLng() {
+        return Double.parseDouble(lng);
     }
 
     public String getAr() {
