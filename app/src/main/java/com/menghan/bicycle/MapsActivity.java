@@ -1,9 +1,12 @@
 package com.menghan.bicycle;
 
 import android.content.Context;
-import android.support.v4.app.FragmentActivity;
+import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
 import android.util.Log;
+import android.view.View;
+import android.widget.ImageButton;
 
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -22,12 +25,17 @@ public class MapsActivity extends FragmentActivity {
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
     private double lat[];
     private double lng[];
+    ImageButton listBtn;
+    ImageButton markerBtn;
+    ImageButton refreshBtn;
+    ImageButton weatherBtn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
         setUpMapIfNeeded();
+        initViews();
         //取得 json 字串
         String json = getRowData(this, R.raw.ubike);
 //        Log.e("value", json);
@@ -36,7 +44,7 @@ public class MapsActivity extends FragmentActivity {
         //將 json 資料注入至 RetCode 物件
         RetCode code = gson.fromJson(json, RetCode.class);
         int i = 0;
-        lat = new double [381];
+        lat = new double[381];
         lng = new double[381];
         try {
             for (RetVal val : code.getRetVal()) {       //取得retVal的陣列裡的物件
@@ -50,14 +58,44 @@ public class MapsActivity extends FragmentActivity {
 
             }
             drawMarker();
-        }catch (Exception e){
+        } catch (Exception e) {
 
         }
     }
 
+    private void initViews() {
+        listBtn = (ImageButton) findViewById(R.id.listBtn);
+        markerBtn = (ImageButton) findViewById(R.id.markerBtn);
+        refreshBtn = (ImageButton) findViewById(R.id.refreshBtn);
+        weatherBtn = (ImageButton) findViewById(R.id.weatherBtn);
+    }
+
+    public void onClick(View view) {
+        Intent intent = new Intent();
+        switch (view.getId()) {
+            case R.id.refreshBtn:
+                break;
+            case R.id.markerBtn:
+                break;
+            case R.id.weatherBtn:
+                break;
+            case R.id.listBtn:
+                Log.e("btn", "ListBtn");
+                intent.setClass(this, UBikeList.class);
+                startActivity(intent);
+                break;
+        }
+    }
+//    private void changeFragment(Fragment f) {
+//        FragmentManager fm = getFragmentManager();
+//        FragmentTransaction transaction = fm.beginTransaction();
+//        transaction.replace(R.id.fragment_container, f);
+//        transaction.commit();
+//    }
+
     private void drawMarker() {
         Log.e("draw", String.valueOf(lat.length));
-        for (int i=0; i<lat.length; i++){
+        for (int i = 0; i < lat.length; i++) {
             mMap.addMarker(new MarkerOptions().position(new LatLng(lat[i], lng[i])).title("yes"));
         }
     }
@@ -97,7 +135,7 @@ public class MapsActivity extends FragmentActivity {
         // Do a null check to confirm that we have not already instantiated the map.
         if (mMap == null) {
             // Try to obtain the map from the SupportMapFragment.
-            mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map))
+            mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map_fragment))
                     .getMap();
             // Check if we were successful in obtaining the map.
             if (mMap != null) {

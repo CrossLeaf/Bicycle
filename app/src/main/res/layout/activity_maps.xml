@@ -3,7 +3,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MapsActivity"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:id="@+id/relative">
 
     <LinearLayout
         android:orientation="horizontal"
@@ -19,25 +20,25 @@
         <ImageButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/imageButton"
+            android:id="@+id/favoriteBtn"
             android:src="@drawable/favorite" />
 
         <EditText
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/editText"
+            android:id="@+id/edText"
             android:layout_weight="1"
             android:hint="請輸入查詢地點" />
 
         <ImageButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/imageButton2"
+            android:id="@+id/searchBtn"
             android:src="@drawable/abc_ic_search_api_mtrl_alpha" />
     </LinearLayout>
 
     <fragment
-        android:id="@+id/map"
+        android:id="@+id/map_fragment"
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -61,37 +62,41 @@
         <ImageButton
             android:layout_width="wrap_content"
             android:layout_height="62dp"
-            android:id="@+id/bottomBtn1"
+            android:id="@+id/refreshBtn"
             android:src="@drawable/refresh"
             android:alpha="10"
             android:layout_gravity="bottom"
             android:layout_weight="1"
-            android:layout_column="0"/>
+            android:layout_column="0"
+            android:onClick="onClick" />
 
         <ImageButton
             android:layout_width="wrap_content"
             android:layout_height="62dp"
-            android:id="@+id/bottomBtn2"
+            android:id="@+id/markerBtn"
             android:src="@drawable/marker"
             android:alpha="10"
             android:layout_gravity="bottom"
-            android:layout_column="1"/>
+            android:layout_column="1"
+            android:onClick="onClick" />
 
         <ImageButton
             android:layout_width="wrap_content"
             android:layout_height="62dp"
-            android:id="@+id/bottomBtn3"
+            android:id="@+id/weatherBtn"
             android:src="@drawable/weather"
             android:alpha="10"
-            android:layout_column="4" />
+            android:layout_column="4"
+            android:onClick="onClick" />
 
         <ImageButton
             android:layout_width="wrap_content"
             android:layout_height="62dp"
-            android:id="@+id/bottomBtn4"
+            android:id="@+id/listBtn"
             android:src="@drawable/list"
             android:alpha="10"
-            android:layout_column="5" />
+            android:layout_column="5"
+            android:onClick="onClick" />
 
     </GridLayout>
 
