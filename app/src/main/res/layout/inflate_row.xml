@@ -12,7 +12,7 @@
         android:layout_alignParentStart="false"
         android:layout_alignParentTop="true"
         android:layout_marginTop="10sp"
-        android:textSize="30sp" />
+        android:textSize="20dp" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -22,7 +22,7 @@
         android:layout_below="@+id/sna"
         android:layout_alignStart="@+id/sna"
         android:textIsSelectable="false"
-        android:textSize="20sp" />
+        android:textSize="15dp" />
 
     <TextView
         android:layout_width="wrap_content"

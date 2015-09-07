@@ -4,7 +4,7 @@ import android.app.Activity;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import org.apache.http.HttpEntity;
@@ -17,21 +17,25 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.util.ArrayList;
 
 
 public class UBikeList extends Activity {
-    ArrayAdapter<String> listAdapter;
     String url = "http://data.taipei/opendata/datalist/apiAccess?scope=resourceAquire&rid=ddb80380-f1b3-4f8e-8016-7ed9cba571d5";
+    private ArrayList<InfoList> listItem;
+    private InfoAdapter adapter;
+    ListView listView;
+    String sna;
+    String ar;
+    String sbi;
+    String bemp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ubike_list);
-
+        listView = (ListView) findViewById(R.id.infoList);
+        new HttpAsyncTask().execute(url);
     }
 
     private class HttpAsyncTask extends AsyncTask<String, Void, String> {
@@ -46,12 +50,28 @@ public class UBikeList extends Activity {
         protected void onPostExecute(String result) {
             Toast.makeText(getBaseContext(), "Received!", Toast.LENGTH_LONG).show();
             try {
+                listItem = new ArrayList<>();
+                adapter = new InfoAdapter(UBikeList.this, listItem);
                 JSONObject jsonObj = new JSONObject(result);
-                String sna = new JSONArray(new JSONObject(jsonObj.getString("result")).getString("results")).getJSONObject(0).getString("sna");
-                String ar = new JSONArray(new JSONObject(jsonObj.getString("result")).getString("results")).getJSONObject(0).getString("ar");
-                String sbi = new JSONArray(new JSONObject(jsonObj.getString("result")).getString("results")).getJSONObject(0).getString("sbi");
-                String bemp = new JSONArray(new JSONObject(jsonObj.getString("result")).getString("results")).getJSONObject(0).getString("bemp");
-//                etResponse.setText(sna);
+                int i = 0;
+                Toast.makeText(UBikeList.this, "正在抓取資料...", Toast.LENGTH_LONG).show();
+                Log.e("list", String.valueOf(new JSONArray(new JSONObject(jsonObj.getString("result")).getString("results")).length()));
+                Log.e("list", "正在印出資料...");
+                while (i < new JSONArray(new JSONObject(jsonObj.getString("result")).getString("results")).length()) {
+                    sna = new JSONArray(new JSONObject(jsonObj.getString("result")).getString("results")).getJSONObject(i).getString("sna");
+                    ar = new JSONArray(new JSONObject(jsonObj.getString("result")).getString("results")).getJSONObject(i).getString("ar");
+                    sbi = new JSONArray(new JSONObject(jsonObj.getString("result")).getString("results")).getJSONObject(i).getString("sbi");
+                    bemp = new JSONArray(new JSONObject(jsonObj.getString("result")).getString("results")).getJSONObject(i).getString("bemp");
+                    InfoList list = new InfoList(sna, ar, sbi, bemp);
+                    listItem.add(list);
+                    i++;
+
+                }
+                Log.e("list", "adapter...");
+//                adapter = new InfoAdapter(UBikeList.this, listItem);
+                listView.setAdapter(adapter);
+                listView.setTextFilterEnabled(true);
+
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -77,7 +97,6 @@ public class UBikeList extends Activity {
 
         } catch (Exception e) {
             Log.e("retSrc", "讀取JSON Error...");
-//            Log.e("retSrc", e.getMessage());
             return null;
         } finally {
             httpclient.getConnectionManager().shutdown();
@@ -85,15 +104,15 @@ public class UBikeList extends Activity {
         return retSrc;
     }
 
-    private static String convertInputStreamToString(InputStream inputStream) throws IOException {
-        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-        String line = "";
-        String result = "";
-        while ((line = bufferedReader.readLine()) != null)
-            result += line;
-
-        inputStream.close();
-        return result;
-
-    }
+//    private static String convertInputStreamToString(InputStream inputStream) throws IOException {
+//        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+//        String line = "";
+//        String result = "";
+//        while ((line = bufferedReader.readLine()) != null)
+//            result += line;
+//
+//        inputStream.close();
+//        return result;
+//
+//    }
 }

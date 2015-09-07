@@ -36,7 +36,8 @@
         </activity>
         <activity
             android:name=".UBikeList"
-            android:label="@string/title_activity_ubike_list" >
+            android:label="@string/title_activity_ubike_list"
+            android:windowSoftInputMode="stateHidden">
             <intent-filter>
                 <action android:name="BikeList" />
 

@@ -17,9 +17,9 @@ public class InfoAdapter extends BaseAdapter {
     // 定義 LayoutInflater
     private LayoutInflater myInflater;
     // 定義 Adapter 內藴藏的資料容器
-    private ArrayList<RetVal> list;
+    private ArrayList<InfoList> list;
 
-    public InfoAdapter(Context context, ArrayList<RetVal> list){  //建構子為了動態初始化
+    public InfoAdapter(Context context, ArrayList<InfoList> list){  //建構子為了動態初始化
         //預先取得 LayoutInflater 物件實體
         myInflater = LayoutInflater.from(context);
         this.list = list;
@@ -64,13 +64,13 @@ public class InfoAdapter extends BaseAdapter {
         }
 
         // 4:取得retVal物件資料
-        RetVal retVal = list.get(position);
+        InfoList infoList = list.get(position);
 
         // 5:設定顯示資料
-        holder.sna.setText(retVal.getStationNo());
-        holder.ar.setText (retVal.getAvalibleBike());
-//        holder.sbi.setText(retVal.get());
-
+        holder.sna.setText(infoList.getSna());
+        holder.ar.setText (infoList.getAr());
+        holder.sbi.setText(infoList.getSbi());
+        holder.bemp.setText(infoList.getBemp());
         return convertView;
     }
     // UI 標籤結構
