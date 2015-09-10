@@ -60,7 +60,7 @@
         android:rowCount="1">
 
         <ImageButton
-            android:layout_width="wrap_content"
+            android:layout_width="75dp"
             android:layout_height="62dp"
             android:id="@+id/refreshBtn"
             android:src="@drawable/refresh"
@@ -71,7 +71,7 @@
             android:onClick="onClick" />
 
         <ImageButton
-            android:layout_width="wrap_content"
+            android:layout_width="75dp"
             android:layout_height="62dp"
             android:id="@+id/markerBtn"
             android:src="@drawable/marker"
@@ -81,7 +81,7 @@
             android:onClick="onClick" />
 
         <ImageButton
-            android:layout_width="wrap_content"
+            android:layout_width="75dp"
             android:layout_height="62dp"
             android:id="@+id/weatherBtn"
             android:src="@drawable/weather"
@@ -90,7 +90,7 @@
             android:onClick="onClick" />
 
         <ImageButton
-            android:layout_width="wrap_content"
+            android:layout_width="75dp"
             android:layout_height="62dp"
             android:id="@+id/listBtn"
             android:src="@drawable/list"
