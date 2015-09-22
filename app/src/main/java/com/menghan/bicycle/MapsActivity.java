@@ -69,42 +69,40 @@ public class MapsActivity extends FragmentActivity {
         //執行異步任務 取得連線
         new HttpAsyncTask().execute(url);
         //取得 json 字串
-        String json = getRowData(this, R.raw.ubike);
-//        Log.e("value", json);
-        //json to pojo
-        Gson gson = new GsonBuilder().create();
-        //將 json 資料注入至 RetCode 物件
-        RetCode code = gson.fromJson(json, RetCode.class);
-        int i = 0;
-        lat = new double[code.getRetVal().length];
-        lng = new double[code.getRetVal().length];
-        sna = new String[code.getRetVal().length];
-        Log.e("test", String.valueOf(code.getRetVal().length));
-        try {
-            for (RetVal val : code.getRetVal()) {       //取得retVal的陣列裡的物件
-                lat[i] = val.getLat();
-                Log.e("test", String.valueOf(val.getLat()));
-                lng[i] = val.getLng();
-                Log.e("test", String.valueOf(val.getLng()));
-                sna[i] = val.getSna();
-                Log.e("test", val.getSna());
-                i++;
-                Log.e("test", String.valueOf(i));
-//            RetVal sum = new RetVal(val.getLat(), val.getLng());   //取出要呈現的值
-//            Log.e("value", sum.toString());
-            }
-            Log.e("test", "進入drawmarker");
-//            initDrawMarker();
-            Log.e("test", "drawMarker...");
-        } catch (Exception e) {
-             e.getStackTrace();
-            Log.e("test", "發生錯誤...");
-        }
+//        String json = getRowData(this, R.raw.ubike);
+////        Log.e("value", json);
+//        //json to pojo
+//        Gson gson = new GsonBuilder().create();
+//        //將 json 資料注入至 RetCode 物件
+//        RetCode code = gson.fromJson(json, RetCode.class);
+//        int i = 0;
+//        lat = new double[code.getRetVal().length];
+//        lng = new double[code.getRetVal().length];
+//        sna = new String[code.getRetVal().length];
+//        Log.e("test", String.valueOf(code.getRetVal().length));
+//        try {
+//            for (RetVal val : code.getRetVal()) {       //取得retVal的陣列裡的物件
+//                lat[i] = val.getLat();
+//                Log.e("test", String.valueOf(val.getLat()));
+//                lng[i] = val.getLng();
+//                Log.e("test", String.valueOf(val.getLng()));
+//                sna[i] = val.getSna();
+//                Log.e("test", val.getSna());
+//                i++;
+//                Log.e("test", String.valueOf(i));
+////            RetVal sum = new RetVal(val.getLat(), val.getLng());   //取出要呈現的值
+////            Log.e("value", sum.toString());
+//            }
+//            Log.e("test", "進入drawmarker");
+////            initDrawMarker();
+//            Log.e("test", "drawMarker...");
+//        } catch (Exception e) {
+//             e.getStackTrace();
+//            Log.e("test", "發生錯誤...");
+//        }
         fabBtn = (ImageButton) findViewById(R.id.fab);
         fabBtn.setOnClickListener(new FabListener());
-        for ( i=0; i<10; i++) {
-            Toast.makeText(this, "正在加載更多站點...", Toast.LENGTH_LONG).show();
-        }
+
     }
 
 
@@ -225,24 +223,25 @@ public class MapsActivity extends FragmentActivity {
                     markerLists.get(i).getLng())).title(markerLists.get(i).getSna()).snippet(snippet));
             Log.e("draw", "新增" + i + "筆");
         }
+
         Log.e("draw", "Init DrawMarker 完成");
     }
 
-    private void drawMarker() {
-        Log.e("draw", String.valueOf(lat.length));
-        sbi = getList();
-        Log.e("draw", "取得sbi");
-        bemp = getList();
-        Log.e("draw", "取得bemp");
-        for (int i = 30; i < lat.length; i++) {
-            Log.e("draw", String.valueOf(i));
-            String snippet = String.format("可借:%s 可停:%s ", sbi.get(i).getSbi(), bemp.get(i).getBemp());
-            Log.e("draw", snippet);
-            mMap.addMarker(new MarkerOptions().position(new LatLng(lat[i], lng[i])).title(sna[i]).snippet(snippet));
-            Log.e("draw", "新增" + i + "筆");
-        }
-        Log.e("draw", "drawMarker 完成");
-    }
+//    private void drawMarker() {
+//        Log.e("draw", String.valueOf(lat.length));
+//        sbi = getList();
+//        Log.e("draw", "取得sbi");
+//        bemp = getList();
+//        Log.e("draw", "取得bemp");
+//        for (int i = 30; i < lat.length; i++) {
+//            Log.e("draw", String.valueOf(i));
+//            String snippet = String.format("可借:%s 可停:%s ", sbi.get(i).getSbi(), bemp.get(i).getBemp());
+//            Log.e("draw", snippet);
+//            mMap.addMarker(new MarkerOptions().position(new LatLng(lat[i], lng[i])).title(sna[i]).snippet(snippet));
+//            Log.e("draw", "新增" + i + "筆");
+//        }
+//        Log.e("draw", "drawMarker 完成");
+//    }
 
     private String getRowData(Context context, int res_id) {
         InputStream is = null;
@@ -311,11 +310,11 @@ public class MapsActivity extends FragmentActivity {
                 int i = 0;
                 Log.e("list", String.valueOf(new JSONArray(new JSONObject(jsonObj.getString("result")).getString("results")).length()));
                 Log.e("list", "正在印出資料...");
-                String obj = new JSONObject(jsonObj.getString("result")).getString("results");
-                Log.e("list", obj);
-                while (i < new JSONArray(obj).length()) {
+//                String obj = new JSONObject(jsonObj.getString("result")).getString("results");
+                JSONArray array = new JSONArray(new JSONObject(jsonObj.getString("result")).getString("results"));
+                while (i < array.length()) {
                     Log.e("list", String.valueOf(i));
-                    JSONObject arrayString = new JSONArray(obj).getJSONObject(i);
+                    JSONObject arrayString = array.getJSONObject(i);
                     sna = arrayString.getString("sna");
                     ar = arrayString.getString("ar");
                     sbi = arrayString.getString("sbi");
@@ -330,8 +329,12 @@ public class MapsActivity extends FragmentActivity {
                     i++;
                     if (i%10 == 0){
                         count = i;
+                        Log.e("list", "count:"+count);
                         publishProgress(markerLists);
                     }
+                    /*else if (i == array.length()){
+
+                    }*/
                 }
             } catch (Exception e) {
                 Log.e("list", "連線出錯");
@@ -342,12 +345,12 @@ public class MapsActivity extends FragmentActivity {
         @Override
         protected void onProgressUpdate(ArrayList<MarkerList>... values) {
             super.onProgressUpdate(values);
-            MapsActivity.initDrawMarker(values[0]);
+            initDrawMarker(values[0]);
         }
 
         @Override
         protected void onPostExecute(ArrayList<InfoList> lists) {
-            drawMarker();
+//            drawMarker();
         }
     }
 
@@ -394,7 +397,7 @@ public class MapsActivity extends FragmentActivity {
     protected void onStop() {
         super.onStop();
         Log.e("circleLife", "stop");
-
+        new HttpAsyncTask().cancel(true);
 //        Log.e("circleLife", list.toString());
     }
 }
