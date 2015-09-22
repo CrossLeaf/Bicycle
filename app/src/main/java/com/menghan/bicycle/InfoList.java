@@ -46,4 +46,9 @@ public class InfoList {
     public String getBemp() {
         return bemp;
     }
+
+    @Override
+    public String toString() {
+        return super.toString();
+    }
 }

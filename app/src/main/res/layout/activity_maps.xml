@@ -109,7 +109,8 @@
         android:src="@drawable/location"
         android:layout_marginBottom="32dp"
         android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true" />
+        android:layout_centerHorizontal="true"
+        android:onClick="onClick" />
 
 </RelativeLayout>
 

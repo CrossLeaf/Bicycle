@@ -1,6 +1,7 @@
 package com.menghan.bicycle;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +24,7 @@ public class InfoAdapter extends BaseAdapter {
         //預先取得 LayoutInflater 物件實體
         myInflater = LayoutInflater.from(context);
         this.list = list;
+        Log.e("listView", list.get(0).getAr());
     }
 
     @Override

@@ -1,16 +1,27 @@
 package com.menghan.bicycle;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.Toast;
 
+import com.google.android.gms.maps.CameraUpdate;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.gson.Gson;
@@ -33,28 +44,28 @@ import java.util.ArrayList;
 public class MapsActivity extends FragmentActivity {
 
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
+    MapView mapView;
+    private LatLng myLatLng;
+    CameraPosition cameraPosition;
+    CameraUpdate cameraUpdate;
+    private LocationManager lc;
     private double lat[];
     private double lng[];
     private String sna[];
     private ArrayList<InfoList> sbi;
     private ArrayList<InfoList> bemp;
-    ImageButton listBtn;
-    ImageButton markerBtn;
-    ImageButton refreshBtn;
-    ImageButton weatherBtn;
+    ImageButton fabBtn;
     String url = "http://data.taipei/opendata/datalist/apiAccess?scope=resourceAquire&rid=ddb80380-f1b3-4f8e-8016-7ed9cba571d5";
-    UBikeList uBikeList = new UBikeList(); //可能有問題
-    private ArrayList<InfoList> listItem;
+    private static ArrayList<InfoList> list;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+        lc = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         setUpMapIfNeeded();
-        initViews();
         //執行異步任務 取得連線
         new HttpAsyncTask().execute(url);
-
         //取得 json 字串
         String json = getRowData(this, R.raw.ubike);
 //        Log.e("value", json);
@@ -81,19 +92,19 @@ public class MapsActivity extends FragmentActivity {
 //            Log.e("value", sum.toString());
             }
             Log.e("test", "進入drawmarker");
-            drawMarker();
+            initDrawMarker();
             Log.e("test", "drawMarker...");
         } catch (Exception e) {
+             e.getStackTrace();
             Log.e("test", "發生錯誤...");
+        }
+        fabBtn = (ImageButton) findViewById(R.id.fab);
+        fabBtn.setOnClickListener(new FabListener());
+        for ( i=0; i<10; i++) {
+            Toast.makeText(this, "正在加載更多站點...", Toast.LENGTH_LONG).show();
         }
     }
 
-    private void initViews() {
-        listBtn = (ImageButton) findViewById(R.id.listBtn);
-        markerBtn = (ImageButton) findViewById(R.id.markerBtn);
-        refreshBtn = (ImageButton) findViewById(R.id.refreshBtn);
-        weatherBtn = (ImageButton) findViewById(R.id.weatherBtn);
-    }
 
     public void onClick(View view) {
         Intent intent = new Intent();
@@ -109,22 +120,128 @@ public class MapsActivity extends FragmentActivity {
                 intent.setClass(this, UBikeList.class);
                 startActivity(intent);
                 break;
+            case R.id.fab:
+                Log.e("btn", "Fab");
+                LocationListener locationChange = new MyLocationListener();
+
+                Log.e("btn", "init");
+                if (!lc.isProviderEnabled(LocationManager.GPS_PROVIDER)){
+                    new AlertDialog.Builder(this)
+                            .setTitle("定位管理")
+                            .setMessage("GPS尚未開啟.\n是否要開啟 GPS ?")
+                            .setPositiveButton("啟用", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    Intent it = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                                    startActivity(it);
+                                }
+                            })
+                            .setNegativeButton("不啟用", null).show();
+                }
+                Log.e("btn", "diaLog");
+                mMap.getUiSettings().setMyLocationButtonEnabled(false);
+                mMap.setMyLocationEnabled(true);
+
+//                m_map.setMyLocationEnabled(true);
+//                myLatLng = new LatLng(mLocation.getLatitude(), mLocation.getLongitude());
+//                cameraPosition = new CameraPosition.Builder().target(myLatLng).zoom(15).build();
+//                cameraUpdate = CameraUpdateFactory.newCameraPosition(cameraPosition);
+//                mMap.animateCamera(cameraUpdate);
+                lc.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 100.0f, locationChange);
+                Log.e("btn", "已定位");
+//                break;
         }
+    }
+    class FabListener implements View.OnClickListener{
+
+        @Override
+        public void onClick(View v) {
+            Log.e("btn", "Fab");
+            LocationListener locationChange = new MyLocationListener();
+
+            Log.e("btn", "init");
+            if (!lc.isProviderEnabled(LocationManager.GPS_PROVIDER)){
+                new AlertDialog.Builder(MapsActivity.this)
+                        .setTitle("定位管理")
+                        .setMessage("GPS尚未開啟.\n是否要開啟 GPS ?")
+                        .setPositiveButton("啟用", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                Intent it = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                                startActivity(it);
+                            }
+                        })
+                        .setNegativeButton("不啟用", null).show();
+            }
+            Log.e("btn", "diaLog");
+            mMap.getUiSettings().setMyLocationButtonEnabled(false);
+            mMap.setMyLocationEnabled(true);
+//                myLatLng = new LatLng(mLocation.getLatitude(), mLocation.getLongitude());
+//                cameraPosition = new CameraPosition.Builder().target(myLatLng).zoom(15).build();
+//                cameraUpdate = CameraUpdateFactory.newCameraPosition(cameraPosition);
+//                mMap.animateCamera(cameraUpdate);
+            lc.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 100.0f, locationChange);
+            Log.e("btn", "已定位");
+        }
+    }
+    public class MyLocationListener implements LocationListener {
+
+        @Override
+        public void onLocationChanged(Location mLocation) {
+            mMap.setMyLocationEnabled(true);
+            myLatLng = new LatLng(mLocation.getLatitude(), mLocation.getLongitude());
+            cameraPosition = new CameraPosition.Builder().target(myLatLng).zoom(15).build();
+            cameraUpdate = CameraUpdateFactory.newCameraPosition(cameraPosition);
+            mMap.animateCamera(cameraUpdate);
+            Toast.makeText(MapsActivity.this, "經緯度座標變更...", Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        public void onStatusChanged(String provider, int status, Bundle extras) {
+
+        }
+
+        @Override
+        public void onProviderEnabled(String provider) {
+
+        }
+
+        @Override
+        public void onProviderDisabled(String provider) {
+
+        }
+    }
+
+    private void initDrawMarker() {
+        Log.e("draw", String.valueOf(lat.length));
+        sbi = getList();
+        Log.e("draw", "取得sbi");
+        bemp = getList();
+        Log.e("draw", "取得bemp");
+        for (int i = 0; i < 30; i++) {
+            Log.e("draw", String.valueOf(i));
+            String snippet = String.format("可借:%s 可停:%s ", sbi.get(i).getSbi(), bemp.get(i).getBemp());
+            Log.e("draw", snippet);
+            mMap.addMarker(new MarkerOptions().position(new LatLng(lat[i], lng[i])).title(sna[i]).snippet(snippet));
+            Log.e("draw", "新增" + i + "筆");
+        }
+        Log.e("draw", "Init DrawMarker 完成");
     }
 
     private void drawMarker() {
         Log.e("draw", String.valueOf(lat.length));
-        sbi = getListItem();
+        sbi = getList();
         Log.e("draw", "取得sbi");
-        bemp = getListItem();
+        bemp = getList();
         Log.e("draw", "取得bemp");
-        for (int i = 0; i < lat.length; i++) {
+        for (int i = 30; i < lat.length; i++) {
             Log.e("draw", String.valueOf(i));
-            String snippet = String.format("可借:%s 可停:%s ",sbi.get(i),bemp.get(i));
+            String snippet = String.format("可借:%s 可停:%s ", sbi.get(i).getSbi(), bemp.get(i).getBemp());
             Log.e("draw", snippet);
             mMap.addMarker(new MarkerOptions().position(new LatLng(lat[i], lng[i])).title(sna[i]).snippet(snippet));
-            Log.e("draw", "新增"+i+"筆");
+            Log.e("draw", "新增" + i + "筆");
         }
+        Log.e("draw", "drawMarker 完成");
     }
 
     private String getRowData(Context context, int res_id) {
@@ -172,41 +289,54 @@ public class MapsActivity extends FragmentActivity {
     }
 
     private void setUpMap() {
-        mMap.addMarker(new MarkerOptions().position(new LatLng(0, 0)).title("Marker"));
+        LatLng latLng = new LatLng(25.0408578889, 121.567904444);
+//        mMap.addMarker(new MarkerOptions().position(latLng));
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15.0f));
 
     }
-    public class HttpAsyncTask extends AsyncTask<String, Void, Void> {
+
+    public class HttpAsyncTask extends AsyncTask<String, Void, ArrayList<InfoList>> {
         @Override
-        protected Void doInBackground(String... urls) {
+        protected ArrayList<InfoList> doInBackground(String... urls) {
             try {
-                listItem = new ArrayList<>();
+                list = new ArrayList<>();
                 JSONObject jsonObj = new JSONObject(getJSONData(urls[0]));
                 int i = 0;
                 Log.e("list", String.valueOf(new JSONArray(new JSONObject(jsonObj.getString("result")).getString("results")).length()));
                 Log.e("list", "正在印出資料...");
                 String obj = new JSONObject(jsonObj.getString("result")).getString("results");
-                JSONObject arrayString = new JSONArray(obj).getJSONObject(i);
+//                JSONObject arrayString = new JSONArray(obj).getJSONObject(i);
                 Log.e("list", obj);
                 while (i < new JSONArray(obj).length()) {
+                    Log.e("list", String.valueOf(i));
+                    JSONObject arrayString = new JSONArray(obj).getJSONObject(i);
                     String sna = arrayString.getString("sna");
                     String ar = arrayString.getString("ar");
                     String sbi = arrayString.getString("sbi");
                     String bemp = arrayString.getString("bemp");
-                    InfoList list = new InfoList(sna, ar, sbi, bemp);
-                    Log.e("list", "list物件");
-                    listItem.add(list);
+                    InfoList listItem = new InfoList(sna, ar, sbi, bemp);
+                    list.add(listItem);
+                    Log.e("list", list.get(i).getAr());
                     i++;
-                    Log.e("list", String.valueOf(i));
+
                 }
             } catch (Exception e) {
+                Log.e("list", "連線出錯");
             }
-            return null;
+            return list;
+        }
+
+        @Override
+        protected void onPostExecute(ArrayList<InfoList> lists) {
+            drawMarker();
         }
     }
 
-    public ArrayList<InfoList> getListItem() {
-        return listItem;
+    public ArrayList<InfoList> getList() {
+
+        return list;
     }
+
     private String getJSONData(String url) {
         String retSrc = "";
         HttpGet httpget = new HttpGet(url);
@@ -230,5 +360,19 @@ public class MapsActivity extends FragmentActivity {
             httpclient.getConnectionManager().shutdown();
         }
         return retSrc;
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.e("circleLife", "pause");
+        Log.e("circleLife", list.toString());
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.e("circleLife", "stop");
+        Log.e("circleLife", list.toString());
     }
 }
