@@ -295,7 +295,7 @@ public class MapsActivity extends FragmentActivity {
 
     }
 
-    public class HttpAsyncTask extends AsyncTask<String, Void, ArrayList<InfoList>> {
+    public class HttpAsyncTask extends AsyncTask<String, Integer, ArrayList<InfoList>> {
         @Override
         protected ArrayList<InfoList> doInBackground(String... urls) {
             try {
@@ -318,12 +318,19 @@ public class MapsActivity extends FragmentActivity {
                     list.add(listItem);
                     Log.e("list", list.get(i).getAr());
                     i++;
+                    publishProgress(i);
 
                 }
             } catch (Exception e) {
                 Log.e("list", "連線出錯");
             }
             return list;
+        }
+
+        @Override
+        protected void onProgressUpdate(Integer... values) {
+            super.onProgressUpdate(values);
+            Log.e("progress", String.valueOf(values[0]));
         }
 
         @Override
