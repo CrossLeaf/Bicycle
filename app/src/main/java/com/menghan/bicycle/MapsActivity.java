@@ -57,6 +57,8 @@ public class MapsActivity extends FragmentActivity {
     ImageButton fabBtn;
     String url = "http://data.taipei/opendata/datalist/apiAccess?scope=resourceAquire&rid=ddb80380-f1b3-4f8e-8016-7ed9cba571d5";
     private static ArrayList<InfoList> list;
+    private  ArrayList<MarkerList> markerLists;
+    private int count=0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,7 +94,7 @@ public class MapsActivity extends FragmentActivity {
 //            Log.e("value", sum.toString());
             }
             Log.e("test", "進入drawmarker");
-            initDrawMarker();
+//            initDrawMarker();
             Log.e("test", "drawMarker...");
         } catch (Exception e) {
              e.getStackTrace();
@@ -120,36 +122,36 @@ public class MapsActivity extends FragmentActivity {
                 intent.setClass(this, UBikeList.class);
                 startActivity(intent);
                 break;
-            case R.id.fab:
-                Log.e("btn", "Fab");
-                LocationListener locationChange = new MyLocationListener();
-
-                Log.e("btn", "init");
-                if (!lc.isProviderEnabled(LocationManager.GPS_PROVIDER)){
-                    new AlertDialog.Builder(this)
-                            .setTitle("定位管理")
-                            .setMessage("GPS尚未開啟.\n是否要開啟 GPS ?")
-                            .setPositiveButton("啟用", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    Intent it = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                                    startActivity(it);
-                                }
-                            })
-                            .setNegativeButton("不啟用", null).show();
-                }
-                Log.e("btn", "diaLog");
-                mMap.getUiSettings().setMyLocationButtonEnabled(false);
-                mMap.setMyLocationEnabled(true);
-
-//                m_map.setMyLocationEnabled(true);
-//                myLatLng = new LatLng(mLocation.getLatitude(), mLocation.getLongitude());
-//                cameraPosition = new CameraPosition.Builder().target(myLatLng).zoom(15).build();
-//                cameraUpdate = CameraUpdateFactory.newCameraPosition(cameraPosition);
-//                mMap.animateCamera(cameraUpdate);
-                lc.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 100.0f, locationChange);
-                Log.e("btn", "已定位");
-//                break;
+//            case R.id.fab:
+//                Log.e("btn", "Fab");
+//                LocationListener locationChange = new MyLocationListener();
+//
+//                Log.e("btn", "init");
+//                if (!lc.isProviderEnabled(LocationManager.GPS_PROVIDER)){
+//                    new AlertDialog.Builder(this)
+//                            .setTitle("定位管理")
+//                            .setMessage("GPS尚未開啟.\n是否要開啟 GPS ?")
+//                            .setPositiveButton("啟用", new DialogInterface.OnClickListener() {
+//                                @Override
+//                                public void onClick(DialogInterface dialog, int which) {
+//                                    Intent it = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+//                                    startActivity(it);
+//                                }
+//                            })
+//                            .setNegativeButton("不啟用", null).show();
+//                }
+//                Log.e("btn", "diaLog");
+//                mMap.getUiSettings().setMyLocationButtonEnabled(false);
+//                mMap.setMyLocationEnabled(true);
+//
+////                m_map.setMyLocationEnabled(true);
+////                myLatLng = new LatLng(mLocation.getLatitude(), mLocation.getLongitude());
+////                cameraPosition = new CameraPosition.Builder().target(myLatLng).zoom(15).build();
+////                cameraUpdate = CameraUpdateFactory.newCameraPosition(cameraPosition);
+////                mMap.animateCamera(cameraUpdate);
+//                lc.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 100.0f, locationChange);
+//                Log.e("btn", "已定位");
+////                break;
         }
     }
     class FabListener implements View.OnClickListener{
@@ -212,17 +214,15 @@ public class MapsActivity extends FragmentActivity {
         }
     }
 
-    private void initDrawMarker() {
-        Log.e("draw", String.valueOf(lat.length));
-        sbi = getList();
-        Log.e("draw", "取得sbi");
-        bemp = getList();
-        Log.e("draw", "取得bemp");
-        for (int i = 0; i < 30; i++) {
+    void initDrawMarker(ArrayList<MarkerList> markerLists) {
+
+        for (int i = count-10; i < count-1; i++) {
             Log.e("draw", String.valueOf(i));
-            String snippet = String.format("可借:%s 可停:%s ", sbi.get(i).getSbi(), bemp.get(i).getBemp());
+            String snippet = String.format("可借:%s 可停:%s ", markerLists.get(i).getSbi(),
+                    markerLists.get(i).getBemp());
             Log.e("draw", snippet);
-            mMap.addMarker(new MarkerOptions().position(new LatLng(lat[i], lng[i])).title(sna[i]).snippet(snippet));
+            mMap.addMarker(new MarkerOptions().position(new LatLng(markerLists.get(i).getLat(),
+                    markerLists.get(i).getLng())).title(markerLists.get(i).getSna()).snippet(snippet));
             Log.e("draw", "新增" + i + "筆");
         }
         Log.e("draw", "Init DrawMarker 完成");
@@ -295,30 +295,43 @@ public class MapsActivity extends FragmentActivity {
 
     }
 
-    public class HttpAsyncTask extends AsyncTask<String, Void, ArrayList<InfoList>> {
+    public class HttpAsyncTask extends AsyncTask<String, ArrayList<MarkerList>, ArrayList<InfoList>> {
         @Override
         protected ArrayList<InfoList> doInBackground(String... urls) {
             try {
+                String sna;
+                String ar;
+                String sbi;
+                String bemp;
+                String lat;
+                String lng;
                 list = new ArrayList<>();
+                markerLists = new ArrayList<>();
                 JSONObject jsonObj = new JSONObject(getJSONData(urls[0]));
                 int i = 0;
                 Log.e("list", String.valueOf(new JSONArray(new JSONObject(jsonObj.getString("result")).getString("results")).length()));
                 Log.e("list", "正在印出資料...");
                 String obj = new JSONObject(jsonObj.getString("result")).getString("results");
-//                JSONObject arrayString = new JSONArray(obj).getJSONObject(i);
                 Log.e("list", obj);
                 while (i < new JSONArray(obj).length()) {
                     Log.e("list", String.valueOf(i));
                     JSONObject arrayString = new JSONArray(obj).getJSONObject(i);
-                    String sna = arrayString.getString("sna");
-                    String ar = arrayString.getString("ar");
-                    String sbi = arrayString.getString("sbi");
-                    String bemp = arrayString.getString("bemp");
+                    sna = arrayString.getString("sna");
+                    ar = arrayString.getString("ar");
+                    sbi = arrayString.getString("sbi");
+                    bemp = arrayString.getString("bemp");
+                    lat = arrayString.getString("lat");
+                    lng = arrayString.getString("lng");
                     InfoList listItem = new InfoList(sna, ar, sbi, bemp);
                     list.add(listItem);
+                    MarkerList markerItem = new MarkerList(sna, sbi, bemp, lat, lng);
+                    markerLists.add(markerItem);
                     Log.e("list", list.get(i).getAr());
                     i++;
-
+                    if (i%10 == 0){
+                        count = i;
+                        publishProgress(markerLists);
+                    }
                 }
             } catch (Exception e) {
                 Log.e("list", "連線出錯");
@@ -327,10 +340,18 @@ public class MapsActivity extends FragmentActivity {
         }
 
         @Override
+        protected void onProgressUpdate(ArrayList<MarkerList>... values) {
+            super.onProgressUpdate(values);
+            MapsActivity.initDrawMarker(values[0]);
+        }
+
+        @Override
         protected void onPostExecute(ArrayList<InfoList> lists) {
             drawMarker();
         }
     }
+
+
 
     public ArrayList<InfoList> getList() {
 
@@ -366,13 +387,14 @@ public class MapsActivity extends FragmentActivity {
     protected void onPause() {
         super.onPause();
         Log.e("circleLife", "pause");
-        Log.e("circleLife", list.toString());
+//        Log.e("circleLife", list.toString());
     }
 
     @Override
     protected void onStop() {
         super.onStop();
         Log.e("circleLife", "stop");
-        Log.e("circleLife", list.toString());
+
+//        Log.e("circleLife", list.toString());
     }
 }
