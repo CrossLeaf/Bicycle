@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.location.GpsStatus;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -19,14 +20,10 @@ import android.widget.Toast;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.playlog.internal.LogEvent;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -40,23 +37,26 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Map;
 
 public class MapsActivity extends FragmentActivity {
 
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
     private LatLng myLatLng;
     private Location myLocation;
-    CameraPosition cameraPosition;
-    CameraUpdate cameraUpdate;
-    private LocationManager lc;
-    private double lat[];
-    private double lng[];
-    private String sna[];
-    private ArrayList<InfoList> sbi;
-    private ArrayList<InfoList> bemp;
+    private String provider;
+    private CameraPosition cameraPosition;
+    private CameraUpdate cameraUpdate;
+    private LocationManager locationMgr;
+    //    private double lat[];
+//    private double lng[];
+//    private String sna[];
+//    private ArrayList<InfoList> sbi;
+//    private ArrayList<InfoList> bemp;
     ImageButton fabBtn;
-    String url = "http://data.taipei/opendata/datalist/apiAccess?scope=resourceAquire&rid=ddb80380-f1b3-4f8e-8016-7ed9cba571d5";
+    private String url = "http://data.taipei/opendata/datalist/apiAccess?scope=resourceAquire&rid=ddb80380-f1b3-4f8e-8016-7ed9cba571d5";
     private static ArrayList<InfoList> list;
     private ArrayList<MarkerList> markerLists;
     private int count = 0;
@@ -65,7 +65,7 @@ public class MapsActivity extends FragmentActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
-        lc = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        locationMgr = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         setUpMapIfNeeded();
         //執行異步任務 取得連線
         new HttpAsyncTask().execute(url);
@@ -98,10 +98,12 @@ public class MapsActivity extends FragmentActivity {
         @Override
         public void onClick(View v) {
             Log.e("gps", "Fab");
-            LocationListener locationChange = new MyLocationListener();
-
-            Log.e("gps", "init");
-            if (!lc.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            if (initLocationProvider()){
+                Log.e("gps", "定位我在哪");
+                mMap.getUiSettings().setMyLocationButtonEnabled(false);
+                mMap.setMyLocationEnabled(true);
+                whereAmI();
+            }else {
                 new AlertDialog.Builder(MapsActivity.this)
                         .setTitle("定位管理")
                         .setMessage("GPS尚未開啟.\n是否要開啟 GPS ?")
@@ -114,31 +116,71 @@ public class MapsActivity extends FragmentActivity {
                         })
                         .setNegativeButton("不啟用", null).show();
             }
-            Log.e("gps", "diaLog");
+            /*Log.e("gps", "diaLog");
             mMap.getUiSettings().setMyLocationButtonEnabled(false);
             mMap.setMyLocationEnabled(true);
-            Location location = lc.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            Location location = locationMgr.getLastKnownLocation(LocationManager.GPS_PROVIDER);
             Log.e("gps", "gps:"+location);
                 myLatLng = new LatLng(location.getLatitude(), location.getLongitude());
                 cameraPosition = new CameraPosition.Builder().target(myLatLng).zoom(15).build();
                 cameraUpdate = CameraUpdateFactory.newCameraPosition(cameraPosition);
                 mMap.animateCamera(cameraUpdate);
-            lc.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 100.0f, locationChange);
-            Log.e("gps", "已定位");
+            locationMgr.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 100.0f, locationChange);
+            Log.e("gps", "已定位");*/
         }
     }
+    private boolean initLocationProvider(){
+        locationMgr = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        if (locationMgr.isProviderEnabled(LocationManager.GPS_PROVIDER)){
+            provider = LocationManager.GPS_PROVIDER;
+            Log.e("gps", "取得:"+provider);
+            return true;
+        }
+        return false;
+    }
+    private void whereAmI() {
+        //取得上次已知的位置
+        myLocation = locationMgr.getLastKnownLocation(provider);
+        updateWithNewLocation(myLocation);
+        mMap.getUiSettings().setMyLocationButtonEnabled(false);
+        mMap.setMyLocationEnabled(true);
 
-    public class MyLocationListener implements LocationListener {
+        Log.e("gps", "取得上次已知的位置");
 
+        //GPS Listener
+        locationMgr.addGpsStatusListener(gpsListener);
+        int minTime = 5000;//ms
+        int minDist = 5;//meter
+        locationMgr.requestLocationUpdates(provider, minTime, minDist, locationListener);
+        Log.e("gps", "GPS Listener");
+    }
+    GpsStatus.Listener gpsListener = new GpsStatus.Listener() {
         @Override
-        public void onLocationChanged(Location mLocation) {
-            Toast.makeText(MapsActivity.this, "目前經度:"+mLocation.getLatitude()+"目前緯度:"+mLocation.getLongitude(),Toast.LENGTH_LONG);
-            myLocation = mLocation;
-            myLatLng = new LatLng(mLocation.getLatitude(), mLocation.getLongitude());
-//            cameraPosition = new CameraPosition.Builder().target(myLatLng).zoom(15).build();
-//            cameraUpdate = CameraUpdateFactory.newCameraPosition(cameraPosition);
-//            mMap.animateCamera(cameraUpdate);
-            Toast.makeText(MapsActivity.this, "經緯度座標變更...", Toast.LENGTH_SHORT).show();
+        public void onGpsStatusChanged(int event) {
+            switch (event){
+                case GpsStatus.GPS_EVENT_STARTED:
+                    Log.d("gps", "GPS_EVENT_STARTED");
+                    Toast.makeText(MapsActivity.this, "GPS_EVENT_STARTED", Toast.LENGTH_SHORT).show();
+                    break;
+                case GpsStatus.GPS_EVENT_STOPPED:
+                    Log.d("gps", "GPS_EVENT_STOPPED");
+                    Toast.makeText(MapsActivity.this, "GPS_EVENT_STOPPED", Toast.LENGTH_SHORT).show();
+                    break;
+                case GpsStatus.GPS_EVENT_FIRST_FIX:
+                    Log.d("gps", "GPS_EVENT_FIRST_FIX");
+                    Toast.makeText(MapsActivity.this, "GPS_EVENT_FIRST_FIX", Toast.LENGTH_SHORT).show();
+                    break;
+                case GpsStatus.GPS_EVENT_SATELLITE_STATUS:
+                    Log.d("gps", "GPS_EVENT_SATELLITE_STATUS");
+                    break;
+            }
+        }
+    };
+
+    LocationListener locationListener = new LocationListener() {
+        @Override
+        public void onLocationChanged(Location location) {
+            updateWithNewLocation(location);
         }
 
         @Override
@@ -148,14 +190,76 @@ public class MapsActivity extends FragmentActivity {
 
         @Override
         public void onProviderEnabled(String provider) {
-
+            updateWithNewLocation(null);
         }
 
         @Override
         public void onProviderDisabled(String provider) {
 
         }
+    };
+
+    private void updateWithNewLocation(Location location) {
+        String where = "";
+        if (location != null) {
+            double lat = location.getLatitude();
+            double lng = location.getLongitude();
+            float speed = location.getSpeed();
+            long time = location.getTime();
+            String timeString = getTimeString(time);
+
+            where = "經度: " + lng +
+                    "\n緯度: " + lat +
+                    "\n速度: " + speed +
+                    "\n時間: " + timeString;
+            Log.e("gps",where);
+            Toast.makeText(this, where, Toast.LENGTH_LONG).show();
+            cameraFocusOnMe(lat, lng);
+        }
+        Log.e("gps", "null");
     }
+
+    private void cameraFocusOnMe(double lat, double lng) {
+        CameraPosition cameraPosition = new CameraPosition.Builder()
+                .target(new LatLng(lat, lng))
+                .zoom(15)
+                .build();
+        mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+    }
+
+    private String getTimeString(long timeInMilliseconds) {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        return simpleDateFormat.format(timeInMilliseconds);
+    }
+
+//    public class MyLocationListener implements LocationListener {
+//
+//        @Override
+//        public void onLocationChanged(Location mLocation) {
+//            Toast.makeText(MapsActivity.this, "目前經度:" + mLocation.getLatitude() + "目前緯度:" + mLocation.getLongitude(), Toast.LENGTH_LONG);
+//            myLocation = mLocation;
+//            myLatLng = new LatLng(mLocation.getLatitude(), mLocation.getLongitude());
+////            cameraPosition = new CameraPosition.Builder().target(myLatLng).zoom(15).build();
+////            cameraUpdate = CameraUpdateFactory.newCameraPosition(cameraPosition);
+////            mMap.animateCamera(cameraUpdate);
+//            Toast.makeText(MapsActivity.this, "經緯度座標變更...", Toast.LENGTH_SHORT).show();
+//        }
+//
+//        @Override
+//        public void onStatusChanged(String provider, int status, Bundle extras) {
+//
+//        }
+//
+//        @Override
+//        public void onProviderEnabled(String provider) {
+//
+//        }
+//
+//        @Override
+//        public void onProviderDisabled(String provider) {
+//
+//        }
+//    }
 
     void initDrawMarker(ArrayList<MarkerList> markerLists) {
         int data = 10;
@@ -177,7 +281,6 @@ public class MapsActivity extends FragmentActivity {
 
         Log.e("draw", "Init DrawMarker 完成");
     }
-
 
 
     private String getRowData(Context context, int res_id) {
